@@ -1,9 +1,9 @@
-# Ansible-Network-All
+# Ansible Network as Code
 Network-Engineer를 위한 Ansible-playbook을 이용하여 네트워크 각 벤더별 네트워크 자동화 Sample
 
 ## 들어가기 앞서...
-네트워크 장비들에 대한 자동화 스크립트를 몇 번 작성하고 사용해본 네트워크 엔지니어 입장에서 앤서블은 그다지 추천하지는 않습니다.
-자동화에 대한 호기심으로 접근하시거나 앤서블로 정점을 찍겠다는 분들에게는 추천드리지만.. 본인이 파이썬/각종 쉘/이외 스크립팅이 가능하다면, 앤서
+네트워크 장비들에 대한 자동화 스크립트를 몇 번 작성하고 사용해본 네트워크 엔지니어 입장에서 앤서블은 추천드립니다.
+다만, 자동화에 대한 호기심으로 접근하시거나 앤서블로 정점을 찍겠다는 분들에게는 추천드리지만.. 본인이 파이썬/각종 쉘/이외 스크립팅이 가능하다면, 앤서
 블을 사용하지 말고 본인이 가장 빠르고 정확하게 할 수 있는 스크립트를 사용하는게 좋다고 생각합니다.
 
 ### Ansible 특징
@@ -22,13 +22,8 @@ gather_facts에는 Network장비에 대한 Model, Version, OS, Interface, Serial
  - gather_facts 주의사항  
 gather_facts의 default는 true로 활성화다. juniper의 경우에는 현재 지원하지 않는다.
 느리다. 왠만한 reserved variable들을 제외하여도 그 하위의 변수들이 많기때문에 느리다. 따라서, 여러 장비들을 할때에는 잘 고려하여 사용하자.
-Vault를 이용하여 패스워드는 암호화하자.  
-Duplicate : https://docs.ansible.com/ansible/latest/reference_appendices/config.html#duplicate-yaml-dict-key
-
-
-
-## How to use each network-vendors
-각 벤더별 Ansible-Playbook 단독 예제
+ - Vault를 이용하여 패스워드는 암호화하자.  
+ - Duplicate : https://docs.ansible.com/ansible/latest/reference_appendices/config.html#duplicate-yaml-dict-key
 
 ### Library Module(requirements.txt)
 Dependency Module(Requirements.txt)
@@ -36,20 +31,25 @@ Dependency Module(Requirements.txt)
 root$ pip3 install -r requirements.txt
 ```
 
-### CASE1) icx-ansible
+
+## How to use each network-vendors
+각 벤더별 Ansible-Playbook 단독 예제
+
+### Case1) icx-ansible
 ICX 스위치 장비들에 대한 Ansible-Playbook 예제
- - https://github.com/alven-kim/ansible-icx
+ - https://github.com/alven-kim/ansible-network-as-code/tree/master/ansible-icx
 
-### CASE2) junos-ansible
+### Case2) junos-ansible
 Juniper 스위치 장비들에 대한 Ansbiel-Playbook 예제
- - https://github.com/alven-kim/ansible-juniper
+ - https://github.com/alven-kim/ansible-network-as-code/tree/master/ansible-junos
 
-### CASE2-2) junos-ansible-os-upgrade(nssu, issu)
+### Case2-2) junos-ansible-os-upgrade(nssu, issu)
 Juniper 스위치 장비들의 OS Upgrade 대한 Ansbiel-Playbook 예제(nssu, issu)
- - https://github.com/alven-kim/ansible-juniper-os-upgrade
+ - https://github.com/alven-kim/ansible-network-as-code/tree/master/ansible-junos-os-upgrade-Xssu
 
-### CASE3) tmos-ansible
+### Case3) tmos-ansible
 F5 장비들에 대한 Ansible-Playbook 예제  
+ - https://github.com/alven-kim/ansible-network-as-code/tree/master/ansible-tmos
  - node
  - pool
  - pool-member
@@ -60,16 +60,16 @@ F5 장비들에 대한 Ansible-Playbook 예제
  - snat / snat_pool
  - etc
 
-### CASE4) Network-All-Ansible
-Ansible inventory에 등록된 모든 Network장비들에 대한 Playbook 예제
-
+### Case4) ansible-vault
+Ansible Vault를 이용한 패스워드 암호화
+ - https://github.com/alven-kim/ansible-network-as-code/tree/master/ansible-vault
 
 
 ## How to use Ansible-Playbook Standard
 Ansible-Playbook에 대한 사용 방법(표준화)
 
 ### YAML 디렉토리 구조
- - current-dirctory - role-dir - vendor-dir - tasks-dir - main.yml
+ - current_dirctory - role_dir - vendor_dir - tasks_dir - main.yml
  - tasks 폴더없이 실행 시, main.yml의 tasks 활성화
  - meta 데이터 없이 실행 버전
 
@@ -133,7 +133,7 @@ junos4(test-sw-04)      : ok=3    changed=1    unreachable=0    failed=0    skip
 <img width="734" alt="ansible-network-all-result" src="https://user-images.githubusercontent.com/41031835/96415321-5f7e3d80-1229-11eb-89d8-700c4465cfde.png">
 
 ## To-Do
-Group_vars 적용하여 호스트 그룹별 변수 적용(https://ansible-tips-and-tricks.readthedocs.io/en/latest/ansible/inventory/)
+미정
 
 ## See also
 Ansible for Network Automation
@@ -163,4 +163,4 @@ Ansible-tmos
  - https://clouddocs.f5.com/products/orchestration/ansible/devel
  - https://clouddocs.f5.com/products/orchestration/ansible/devel/modules/module_index.html
  - https://docs.ansible.com/ansible/latest/collections/f5networks/f5_modules/bigip_node_module.html
-
+ - group_vars 적용하여 호스트 그룹별 변수 적용 - https://ansible-tips-and-tricks.readthedocs.io/en/latest/ansible/inventory

@@ -1,47 +1,3 @@
-# This is the default ansible 'hosts' file.
-#
-# It should live in /etc/ansible/hosts
-#
-#   - Comments begin with the '#' character
-#   - Blank lines are ignored
-#   - Groups of hosts are delimited by [header] elements
-#   - You can enter hostnames or ip addresses
-#   - A hostname/ip can be a member of multiple groups
-
-# Ex 1: Ungrouped hosts, specify before any group headers.
-
-#green.example.com
-#blue.example.com
-#192.168.100.1
-#192.168.100.10
-
-# Ex 2: A collection of hosts belonging to the 'webservers' group
-
-#[webservers]
-#alpha.example.org
-#beta.example.org
-#192.168.1.100
-#192.168.1.110
-
-# If you have multiple hosts following a pattern you can specify
-# them like this:
-
-#www[001:006].example.com
-
-# Ex 3: A collection of database servers in the 'dbservers' group
-
-#[dbservers]
-#
-#db01.intranet.mydomain.net
-#db02.intranet.mydomain.net
-#10.25.1.56
-#10.25.1.57
-
-# Here's another example of host ranges, this time there are no
-# leading 0s:
-
-#db-[99:101]-node.example.com
-
 [all:vars]
 ansible_python_interpreter=/usr/bin/python3
 ansible_become=yes
@@ -69,8 +25,8 @@ ansible_network_model=qfx5100
 #ansible_qfx5100_pkg_20_2R1="jinstall-host-qfx-5-20.2R1.10-signed.tgz"
 
 [qfx5110]
-#issu03 ansible_host=10.232.255.5
-issu04 ansible_host=10.232.255.6
+#issu03 ansible_host=10.20.40.5
+issu04 ansible_host=10.20.40.6
 
 [qfx5110:vars]
 ansible_network_os=junos
@@ -78,10 +34,6 @@ ansible_network_model=qfx5110
 #ansible_qfx5110_version="18.1R3-S6.1"
 #ansible_qfx5110_package="install-media-host-usb-qfx-5e-x86-64-18.1R3-S6.1-signed.tgz"
 
-
 [junos:children]
 qfx5100
 qfx5110
-
-
-

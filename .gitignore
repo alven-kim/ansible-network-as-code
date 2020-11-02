@@ -7,6 +7,4 @@
 *.default
 .DS_Store
 __pycache__/
-old
-inventory
-inventory-vault
+*.yml.old

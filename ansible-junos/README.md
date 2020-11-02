@@ -11,7 +11,7 @@ PLAY
 ----
  - normal : ansible-playbook -i [inventory] [playbook yaml]  
  - valut : ansible-playbook --ask-vault-pass -i [vault-inventory] [playbook yaml]  
- - vault 방법은 링크 참조(https://github.com/alven-kim/ansible-for-network)
+ - vault 방법은 링크 참조(https://github.com/alven-kim/ansible-network-as-code/tree/master/ansible-vault)
 
 Result
 ------

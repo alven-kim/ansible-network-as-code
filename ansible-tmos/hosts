@@ -11,6 +11,6 @@ test_node01a node_ip=172.19.24.211 pool_name=ansible.alvenkim.com_8080 pool_moni
 test_node02a node_ip=172.19.24.212 pool_name=ansible.alvenkim.com_8080 pool_monitor=http
 
 [f5_vserver]
-ansible.alvenkim.com_80_1 vs_tg=traffic-group-1 vs_tg_vip=10.20.40.101 vs_pool=ansible.alvenkim.com_8080 vs_tcp_profile=tcp vs_http_profile=http_x-forwarded-for vs_desc=alvenkim-ansible-tmos
-ansible.alvenkim.com_80_2 vs_tg=traffic-group-2 vs_tg_vip=10.20.40.102 vs_pool=ansible.alvenkim.com_8080 vs_tcp_profile=tcp vs_http_profile=http_x-forwarded-for vs_desc=alvenkim-ansible-tmos
-ansible.alvenkim.com_80_3 vs_tg=traffic-group-3 vs_tg_vip=10.20.40.103 vs_pool=ansible.alvenkim.com_8080 vs_tcp_profile=tcp vs_http_profile=http_x-forwarded-for vs_desc=alvenkim-ansible-tmos
+ansible.alvenkim.com_80_1 vs_tg=traffic-group-1 vs_tg_vip=10.20.40.101 vs_pool=ansible.alvenkim.com_8080 vs_tcp_profile=tcp vs_http_profile=http vs_desc=alvenkim-ansible-tmos
+ansible.alvenkim.com_80_2 vs_tg=traffic-group-2 vs_tg_vip=10.20.40.102 vs_pool=ansible.alvenkim.com_8080 vs_tcp_profile=tcp vs_http_profile=http vs_desc=alvenkim-ansible-tmos
+ansible.alvenkim.com_80_3 vs_tg=traffic-group-3 vs_tg_vip=10.20.40.103 vs_pool=ansible.alvenkim.com_8080 vs_tcp_profile=tcp vs_http_profile=http vs_desc=alvenkim-ansible-tmos
