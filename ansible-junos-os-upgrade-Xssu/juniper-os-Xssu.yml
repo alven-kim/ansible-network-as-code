@@ -1,0 +1,117 @@
+---
+### Ref : https://junos-ansible-modules.readthedocs.io/en/2.4.0/juniper_junos_software.html
+### Ref : https://galaxy.ansible.com/juniper/device
+
+- name: Install Junos OS
+  hosts: junos
+  collections:
+    - juniper.device
+  connection: local
+  gather_facts: no
+  vars:
+    QFX5100_OS: "5-18.4R3.3"
+    QFX5100_OS_PKG: "jinstall-host-qfx-5-18.4R3.3-signed.tgz"
+    pkg_dir_qfx5100: "{{ lookup('env', 'PWD') }}/junos/qfx5100"
+    QFX5110_OS: "19.4R2.6"
+    QFX5110_OS_PKG: "jinstall-host-qfx-5e-x86-64-19.4R2.6-secure-signed.tgz"
+    pkg_dir_qfx5110: "{{ lookup('env', 'PWD') }}/junos/qfx5110"
+    wait_time: 3600
+    log_dir: "{{ lookup('env', 'PWD') }}/junos/os_log"
+    netconf_port: 830
+
+  tasks:
+    - name: Checking NETCONF connectivity
+      wait_for:
+        host: "{{ ansible_host }}"
+        port: "{{ netconf_port }}"
+        timeout: 400 # To prevent the netconf session from breaking up when RE reboots to NSSU.
+
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/file_module.html#file-module
+    - name: Create pkg_dir and log_dir directory "{{ lookup('env', 'PWD') }}/junos"
+      file:
+        path: "{{ lookup('env', 'PWD') }}/{{ item }}"
+        state: directory
+        mode: '0775'
+        #mode: u=rw,g=r,o=r
+        #mode: u+rw,g-wx,o-rwx
+        recurse: yes
+      with_items: ["junos/qfx5100", "junos/qfx5110", "junos/os_log"]
+
+    - name: Install QFX5100 JUNOS
+      juniper_junos_software:
+        reboot: yes
+#        reboot_pause: 300
+        version: "{{ QFX5100_OS }}"
+        package: "{{ pkg_dir_qfx5100 }}/{{ QFX5100_OS_PKG }}"
+        logfile: "{{ log_dir }}/{{ inventory_hostname }}-{{ ansible_host }}-{{ QFX5100_OS }}.log"
+        nssu: yes
+        all_re: yes
+        no_copy: yes
+        validate: false
+#        install_timeout: 1800
+#        checksum_timeout: 420
+#        cleanfs_timeout: 600
+#        checksum:
+#        checksum_algorithm: sha256
+#        cleanfs: true
+#        force_host: yes
+#        kwargs: {"no-copy": true,"force": true,"unlink": true}
+#        kwargs:
+#          no-copy: true
+#          force: true
+#          unlink: true
+      register: qfx5100
+      notify:
+        - wait_reboot_qfx5100
+      when:
+        - ansible_network_os == "junos"
+        - ansible_network_model == "qfx5100"
+        - "'nssu' in inventory_hostname"
+#        - (ansible_network_model == "qfx5100" or "qfx5110")
+
+    - name: DEBUG - QFX5100
+      debug:
+        var: qfx5100
+#        msg: "{{ qfx5100.stdout_lines }}"
+
+    - name: Install QFX5110 JUNOS
+      juniper_junos_software:
+        reboot: yes
+#        reboot_pause: 300
+        version: "{{ QFX5110_OS }}"
+        package: "{{ pkg_dir_qfx5110 }}/{{ QFX5110_OS_PKG }}"
+        logfile: "{{ log_dir }}/{{ inventory_hostname }}-{{ ansible_host }}-{{ QFX5110_OS }}.log"
+        issu: yes
+        no_copy: yes
+        validate: false
+#        all_re: false
+#        kwargs:
+#          re1: true    # QFX5110 Options
+      register: qfx5110
+      notify:
+        - wait_reboot_qfx5110
+      when:
+        - ansible_network_os == "junos"
+        - ansible_network_model == "qfx5110"
+        - "'issu' in inventory_hostname"
+
+    - name: DEBUG - QFX5110
+      debug:
+        var: qfx5110
+#        msg: "{{ qfx5110.stdout_lines }}"
+
+
+  handlers:
+    - name: wait_reboot_qfx5100
+      wait_for: 
+        host: "{{ ansible_host }}"
+        port: "{{ netconf_port }}"
+        timeout: "{{ wait_time }}"
+      when: not qfx5100.check_mode
+
+    - name: wait_reboot_qfx5110
+      wait_for: 
+        host: "{{ ansible_host }}"
+        port: "{{ netconf_port }}"
+        timeout: "{{ wait_time }}"
+      when: not qfx5110.check_mode

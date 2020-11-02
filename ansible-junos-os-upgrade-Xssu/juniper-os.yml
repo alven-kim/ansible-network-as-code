@@ -1,0 +1,76 @@
+---
+- name: Install Junos OS
+  hosts: junos
+  collections:
+    - juniper.device
+  connection: local
+  gather_facts: no
+  vars:
+    QFX5100_OS: 5-18.2R3-S1.7
+    QFX5100_OS_PKG: jinstall-host-qfx-5-18.2R3-S1.7-signed.tgz
+    QFX5110_OS: null
+    QFX5110_OS_PKG: null
+    wait_time: 3600
+    netconf_port: 830
+    pkg_dir: "{{ lookup('env', 'PWD') }}/junos/firmware"
+    log_dir: "{{ lookup('env', 'PWD') }}/junos/firmware/os_log"
+
+  tasks:
+    - name: Checking NETCONF connectivity
+      wait_for:
+        host: "{{ ansible_host }}"
+        port: "{{ netconf_port }}"
+        timeout: 5
+
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/file_module.html#file-module
+    - name: Create pkg_dir and log_dir directory "{{ lookup('env', 'PWD') }}/junos/firmware"
+      file:
+        path: "{{ lookup('env', 'PWD') }}/junos/firmware/os_log"
+        state: directory
+        mode: '0775'
+        #mode: u=rw,g=r,o=r
+        #mode: u+rw,g-wx,o-rwx
+
+    - name: Install QFX5100 JUNOS
+      juniper_junos_software:
+        reboot: yes
+        version: "{{ QFX5100_OS }}"
+        package: "{{ pkg_dir }}/{{ QFX5100_OS_PKG }}"
+        logfile: "{{ log_dir }}/{{ inventory_hostname }}-{{ ansible_host }}-{{ QFX5100_OS }}.log"
+      register: qfx5100
+      notify:
+        - wait_reboot_qfx5100
+      when:
+        - ansible_network_os == "junos" and ansible_junos_model is match("qfx5100.*")
+#        - ansible_network_os == "junos"
+#        - ansible_network_model == "qfx5100"
+#        - (ansible_network_model == "qfx5100" or "qfx5110")
+
+    - name: Install QFX5110 JUNOS
+      juniper_junos_software:
+        reboot: yes
+        version: "{{ QFX5110_OS }}"
+        package: "{{ pkg_dir }}/{{ QFX5110_OS_PKG }}"
+        logfile: "{{ log_dir }}/{{ inventory_hostname }}-{{ ansible_host }}-{{ QFX5110_OS }}.log"
+      register: qfx5110
+      notify:
+        - wait_reboot_qfx5110
+      when:
+        - ansible_network_os == "junos" and ansible_junos_model is match("qfx5110.*")
+#        - ansible_network_os == "junos"
+#        - ansible_network_model == "qfx5110"
+
+  handlers:
+    - name: wait_reboot_qfx5100
+      wait_for: 
+        host: "{{ ansible_host }}"
+        port: "{{ netconf_port }}"
+        timeout: "{{ wait_time }}"
+      when: not qfx5100.check_mode
+
+    - name: wait_reboot_qfx5110
+      wait_for: 
+        host: "{{ ansible_host }}"
+        port: "{{ netconf_port }}"
+        timeout: "{{ wait_time }}"
+      when: not qfx5110.check_mode

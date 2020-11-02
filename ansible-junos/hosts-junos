@@ -1,0 +1,55 @@
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3
+ansible_connection=network_cli
+ansible_become=yes
+ansible_become_method=enable
+ansible_user="Your ID"
+ansible_password="Your PASSWORD"
+ansible_become_pass="Your enable PASSWORD"
+
+[icx:vars]
+ansible_network_os=icx
+
+[icx]
+#icx1(bb1)  ansible_host=10.27.2.2  ansible_icx_model=ICX7750-48F
+#icx2(office-1) ansible_host=10.27.2.254 ansible_icx_model=ICX7450-48F
+#icx3(bb2)  ansible_host=10.27.2.3   ansible_icx_model=ICX7750-48F
+
+[junos:vars]
+ansible_network_os=junos
+
+[junos]
+junos1(dev-l3)  ansible_host=10.20.75.11  ansible_junos_model=qfx5100-48t-6q
+junos2(qa-l3)  ansible_host=10.20.75.12  ansible_junos_model=qfx5100-48t-6q
+junos3(l2-1) ansible_host=172.16.1.1  ansible_junos_model=qfx5100-48t-6q
+junos4(l2-2) ansible_host=172.16.1.2 ansible_junos_model=qfx5100-48t-6q
+junos5(l2-3) ansible_host=172.16.1.3  ansible_junos_model=qfx5100-48t-6q
+junos6(l2-4) ansible_host=172.16.1.4 ansible_junos_model=qfx5100-48t-6q
+junos7(l2-5) ansible_host=172.16.1.5  ansible_junos_model=qfx5100-48t-6q
+junos8(l2-6) ansible_host=172.16.1.6  ansible_junos_model=qfx5100-48t-6q
+junos9(l2-7) ansible_host=172.16.1.7 ansible_junos_model=qfx5100-48t-6q
+junos10(l2-8) ansible_host=172.16.1.8 ansible_junos_model=qfx5100-48t-6q
+junos11(l2-9) ansible_host=172.16.1.9  ansible_junos_model=qfx5100-48t-6q
+junos12(l2-10) ansible_host=172.16.1.10  ansible_junos_model=qfx5100-48t-6q
+junos13(l2-11) ansible_host=172.16.1.11 ansible_junos_model=qfx5100-48t-6q
+junos14(l2-12) ansible_host=172.16.1.12 ansible_junos_model=qfx5100-48t-6q
+junos15(l2-13)  ansible_host=172.16.1.13 ansible_junos_model=ex4300-24t
+junos16(l2-14)  ansible_host=172.16.1.14 ansible_junos_model=qfx5100-48t-6q
+junos17(l2-15) ansible_host=172.16.1.15 ansible_junos_model=qfx5100-48t-6q
+junos18(l2-16) ansible_host=172.16.1.16 ansible_junos_model=qfx5100-48t-6q
+junos19(l2-17) ansible_host=172.16.1.17  ansible_junos_model=qfx5110-32q
+junos20(l2-18) ansible_host=172.16.1.18  ansible_junos_model=qfx5100-48t-6q
+junos21(l2-19) ansible_host=172.16.1.19  ansible_junos_model=qfx5100-48t-6q
+junos22(l2-20) ansible_host=172.16.1.20  ansible_junos_model=qfx5100-48t-6q
+
+
+[network:children]
+icx
+junos
+
+[switches:children]
+icx
+junos
+
+[loadbalance:children]
+

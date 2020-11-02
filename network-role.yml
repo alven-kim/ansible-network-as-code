@@ -1,0 +1,11 @@
+---
+- name: Get Device Facts
+  hosts: network
+  connection: network_cli
+  roles:
+    - icx
+    - junos
+  gather_facts: no
+
+  vars:
+    nowtime: "{{ lookup('pipe', 'date +%FT%T') }}"

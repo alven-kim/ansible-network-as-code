@@ -1,0 +1,3 @@
+---
+#[tmos:vars]
+ansible_network_os: tmos

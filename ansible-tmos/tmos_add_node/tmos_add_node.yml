@@ -1,0 +1,10 @@
+---
+ - name: Create node-ALL
+    bigip_node:
+      provider: “{{ provider }}”
+      state: “present”
+      host: “{{hostvars[item].ansible_host}}”
+      name: “{{hostvars[item].inventory_hostname}}”
+      validate_certs: False
+    loop: “{{ groups[‘f5_node’] }}”
+    delegate_to: localhost

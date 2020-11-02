@@ -1,0 +1,33 @@
+---
+  #tasks:
+    - name: JUNIPER - CMD - CONFIG
+      register: reply_junos
+      junos_command:
+        commands:
+          - configure
+          - set system login user readonly uid 1301 class read-only authentication encrypted-password "$6$Tgmxgmck$23/4Tafsdwerjiqjwi."
+          - commit comment "ansible role test"
+        display: text  # set / json / xml / text # aliases format, output
+      when: ansible_network_os == 'junos'
+
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/file_module.html#file-module
+    - name: Create logs directory "{{ lookup('env', 'PWD') }}/junos/logs"
+      file:
+        path: "{{ lookup('env', 'PWD') }}/junos/logs"
+        state: directory
+        mode: '0775'
+        #mode: u=rw,g=r,o=r
+        #mode: u+rw,g-wx,o-rwx
+
+    - name: JUNIPER - Copy to output "{{ lookup('env', 'PWD') }}/junos/logs"
+      copy:
+        content: "{{ reply_junos.stdout_lines | to_nice_json }}"
+        dest: "{{ lookup('env', 'PWD' ) }}/junos/logs/{{ inventory_hostname }}-{{ ansible_host }}.log"
+      when: ansible_network_os == "junos"
+
+    - name: JUNIPER Print Output
+      debug:
+        msg:
+          - "{{ reply_junos.stdout_lines }}"
+      when: ansible_network_os == "junos"
+

@@ -1,0 +1,63 @@
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3
+ansible_connection=network_cli
+ansible_become=yes
+ansible_become_method=enable
+ansible_user="Your ID"
+ansible_password="Your PASSWORD"
+ansible_become_pass="Your enable PASSWORD"
+
+[icx:vars]
+ansible_network_os=icx
+
+[icx]
+#icx1(bb1)  ansible_host=10.27.2.2  ansible_icx_model=ICX7750-48F
+#icx2(office-1) ansible_host=10.27.2.254 ansible_icx_model=ICX7450-48F
+#icx3(bb2)  ansible_host=10.27.2.3   ansible_icx_model=ICX7750-48F
+
+[junos:vars]
+ansible_network_os=junos
+
+[junos]
+junos1(dev-l3)  ansible_host=10.20.75.11  ansible_junos_model=qfx5100-48t-6q
+junos2(qa-l3)  ansible_host=10.20.75.12  ansible_junos_model=qfx5100-48t-6q
+junos3(l2-1) ansible_host=172.16.1.1  ansible_junos_model=qfx5100-48t-6q
+
+[ios:vars]
+ansible_network_os=ios
+
+[ios]
+
+[nxos:vars]
+ansible_network_os=nxos
+
+[nxos]
+
+[tmos:vars]
+ansible_network_os=tmos
+
+[tmos]
+
+[alteonos:vars]
+ansible_network_os=alteonos
+
+[alteonos]
+
+[network:children]
+icx
+junos
+ios
+nxos
+tmos
+alteon
+
+[switches:children]
+icx
+junos
+ios
+nxos
+
+[loadbalance:children]
+tmos
+alteon
+

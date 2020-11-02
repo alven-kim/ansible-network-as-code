@@ -1,0 +1,125 @@
+---
+- name: Get Device Facts
+  hosts: all
+  connection: network_cli
+  gather_facts: no
+
+
+  tasks:
+    - name: Gather facts (icx)
+      icx_facts:
+      when: ansible_network_os == 'icx'
+
+    - name: Gather facts (eos)
+      eos_facts:
+      when: ansible_network_os == 'eos'
+
+    - name: Gather facts (ios)
+      ios_facts:
+      when: ansible_network_os == 'ios'
+
+
+    - name: Display some facts variables
+      debug:
+#        msg: "The hostname is {{ ansible_net_hostname }} and the OS is {{ ansible_net_version }}"
+        msg:
+          - "Hostname: {{ ansible_net_hostname }}"
+          - "Model: {{ ansible_net_model }}"
+          - "Version: {{ ansible_net_version }}"
+          - "Serial: {{ ansible_net_serialnum }}"
+          - "MGMT: {{ ansible_net_all_ipv4_addresses }}"  # MGMT IP Output
+          - "Stack: {{ ansible_net_stacked_models }}"
+#          - "Interfaces: {{ ansible_net_interfaces }}"
+#          - "Subnet: {{ ansible_net_gather_subset }}"
+#          - "Config: {{ ansible_net_config }}"
+      when: ansible_network_os == 'icx'
+
+
+    - name: ICX - CMD - CONFIG
+      icx_command:
+        commands:
+          - config t
+          - logging host 10.20.75.250
+          - write memory
+      register: reply_icx
+      when: ansible_network_os == "icx"
+
+    - name: ICX - Copy to output "/etc/ansible"
+      copy:
+        content: "{{ reply_icx.stdout_lines | to_nice_json }}"
+        dest: "{{inventory_hostname}}-{{ ansible_host }}.log"
+      when: ansible_network_os == "icx"
+
+
+    - name: ICX Print Output
+#      debug: var=reply_icx.stdout_lines
+      debug:
+        msg:
+          - "{{ reply_icx.stdout_lines }}"
+      when: ansible_network_os == "icx" and ansible_net_version == "08.0.30gT203"
+
+
+
+
+
+    - name: JUNIPER - CMD - CONFIG
+      register: reply_junos
+      junos_command:
+        commands:
+          - config
+          - set system syslog host 10.20.75.250 any notice
+          - set system syslog host 10.20.75.250 authorization info
+          - set snmp client-list CLIENT-LIST 10.20.75.250/32
+          - set firewall family inet filter VTY term 01 from source-address 10.20.75.250/32
+          - commit comment "ansible add snmp syslog"
+        display: json  # set / json / xml / text # aliases format, output
+      when:
+        - ansible_network_os == "junos"
+        - ansible_net_version == "18.2R3-S1.7"
+
+
+    - name: JUNIPER Print Output
+      debug:
+#      debug: var=reply_junos.stdout_lines
+        msg:
+          - "{{ reply_junos.stdout_lines }}"
+      when: ansible_network_os == "junos"
+
+
+    - name: JUNIPER - Copy to output "/etc/ansible"
+      copy:
+        content: "{{ reply_junos.stdout_lines | to_nice_json }}"
+#        content:
+#            - "{{ reply_junos.stdout_lines | to_nice_json }}"
+#            - "{{ reply_junos.stdout_lines[0] | to_nice_json(indent=8) }}"
+#            - "{{ reply_junos.stdout_lines[1] | to_nice_json(indent=10) }}"
+#            - "{{ reply_junos.stdout_lines[2] | to_nice_json }}"
+#            - "{{ reply_junos.stdout_lines[3] | to_nice_json }}"
+        dest: "/etc/ansible/{{ inventory_hostname }}-{{ ansible_host }}.log"
+      when: ansible_network_os == "junos"
+#      when: ansible_network_os == "junos" or ansible_network_os == "icx"
+
+
+
+
+
+
+
+
+
+
+
+
+##### etc sample
+
+#    - name: Copy output to "/etc/ansible"
+#      copy:
+#        content:
+#          - "show version - {{ reply_icx.stdout_lines[0] | to_json }}"
+##          - "show run vlan - {{ reply_icx.stdout_lines[1] | to_nice_json(indent=10) }}"
+##          - "show ip interface - {{ reply_icx.stdout_lines[2] | to_nice_json(indent=8) }}"
+##          - "show running-config - {{ reply_icx.stdout_lines[3] | to_nice_json(indent=2) }}"
+#        dest: "/etc/ansible/{{ inventory_hostname }}-{{ ansible_host }}.log"
+#      when: ansible_network_os == "icx" or ansible_network_os == "ios"
+##      when: group_names | select('search','hello') | list | count > 0
+

@@ -1,0 +1,3 @@
+---
+#[junos:vars]
+ansible_network_os: junos

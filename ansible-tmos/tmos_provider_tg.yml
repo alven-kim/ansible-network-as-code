@@ -1,0 +1,85 @@
+---
+
+- name: Connection-TEST - Create a VServer, Pool, Pool-Members, Nodes
+  hosts: f5_appliance
+  gather_facts: true
+  connection: ssh
+  vars:
+#    ansible_python_interpreter: /usr/bin/python3
+    provider:
+      user: "root"
+      password: "PASSWORD"
+      server: "10.20.40.5"
+      validate_certs: False
+      #server_port: 443
+
+  tasks:
+    - name: Create node-ALL
+      bigip_node:
+       provider: "{{ provider }}"
+       state: "present" # present / absent / enabled / disabled / etc..
+       host: "{{hostvars[item].node_ip}}"
+       name: "{{hostvars[item].inventory_hostname}}"
+       validate_certs: False
+      loop: "{{ groups['f5_nodeNpool'] }}"
+      delegate_to: localhost
+
+    - name: Create a POOL
+      bigip_pool:
+        provider: "{{ provider }}"
+        name: "{{hostvars[item].pool_name}}"
+        lb_method: "ratio-least-connections-member" # round-robin / ratio-least-connections-member / etc..
+        monitor_type: "and_list"
+        monitors: "{{hostvars[item].pool_monitor}}"
+         #- "/Common/http"
+         #- "/Common/tcp"
+       #slow_ramp_time: 120
+      loop: "{{ groups['f5_nodeNpool'] }}"
+
+    - name: Add to pool-members
+      bigip_pool_member:
+        provider: "{{ provider }}"
+        state: "present"  # present / absent
+        name: "{{hostvars[item].inventory_hostname}}"
+        host: "{{hostvars[item].node_ip}}"
+        port: "8080"
+        pool: "{{hostvars[item].pool_name}}"
+      loop: "{{ groups['f5_nodeNpool'] }}"
+
+    - name: Add Virtual-Address(Traffic-Group-1to3)
+      bigip_virtual_address:
+        provider: "{{ provider }}"
+        name: "{{hostvars[item].inventory_hostname}}"
+        partition: "Common"
+        traffic_group: "{{hostvars[item].vs_tg}}"
+        address: "{{hostvars[item].vs_tg_vip}}"
+      loop: "{{ groups['f5_vserver'] }}"
+      delegate_to: localhost
+
+    - name: Create VServers(Traffic-Group-1to3)
+      bigip_virtual_server:
+       provider: "{{ provider }}"
+       partition: "/Common/"  # Default Common
+       destination: "{{hostvars[item].vs_tg_vip}}"
+       state: "present" # present / absent / enabled / disabled / etc..
+       type: "standard" # standard / performance-l4 / forwarding-ip / etc..
+       name: "{{hostvars[item].inventory_hostname}}"
+       description: "{{hostvars[item].vs_desc}}"
+       port: "80"
+       all_profiles:
+         - "{{hostvars[item].vs_tcp_profile}}"
+         - "{{hostvars[item].vs_http_profile}}"
+       #all_profiles: ['tcp-keepalive-45s', 'http_x-forwarded-for']
+       source_port: "preserve"  # preserve / preserve-strict / change
+       pool: "{{hostvars[item].vs_pool}}"
+       snat: "snat_10.20.41.0"
+       validate_certs: False
+      loop: "{{ groups['f5_vserver'] }}"
+      #enabled_vlans: "all"
+      #all_profiles: ['http','clientssl','oneconnect']
+      #snat: "Automap"
+
+    - name: SAVE RUNNING CONFIG ON BIG-IP
+      bigip_config:
+        provider: "{{ provider }}"
+        save: yes

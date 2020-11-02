@@ -1,0 +1,54 @@
+---
+  #tasks:
+    - name: ICX6000, FWS624G Commands Config
+      icx_command:
+        commands:
+          - "config t"
+          - "snmp-server host 10.20.70.100 version v2c alvenkim-snmp"
+          - "end"
+          - "write memory"
+      register: reply_icx6000
+      changed_when:
+        - "'plicate' not in 'reply_icx6000.stderr or reply_icx6000.stdout'"
+      when:
+        - "(ansible_network_os == 'icx') and (ansible_icx_model is regex('ICX6.*') or ansible_icx_model is regex('FWS.*'))" # https://docs.ansible.com/ansible/latest/user_guide/playbooks_tests.html#testing-strings
+
+    - name: ICX7000 Commands Config
+      icx_command:
+        commands:
+          - "config t"
+          - "snmp-server host 10.20.70.100 version v2c alvenkim-snmp"
+          - "end"
+          - "write memory"
+      register: reply_icx7000
+      changed_when:
+        - "'plicate' not in 'reply_icx7000.stderr or reply_icx7000.stdout'"
+      when:
+        - ansible_network_os == "icx" and ansible_icx_model is match("ICX7.*")
+
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/file_module.html#file-module
+    - name: Create logs directory "{{ lookup('env', 'PWD') }}/icx/logs"
+      file:
+        path: "{{ lookup('env', 'PWD') }}/icx/logs"
+        state: directory
+        mode: '0775'
+        #mode: u=rw,g=r,o=r
+        #mode: u+rw,g-wx,o-rwx
+
+    - name: ICX6000 - Copy to Output "{{ lookup('env', 'PWD') }}/icx/logs"
+      copy:
+        content:
+          - "{{ nowtime }} -- {{ reply_icx6000 }}"
+        dest: "{{ lookup('env', 'PWD') }}/icx/logs/{{ inventory_hostname }}-{{ ansible_host }}.log"
+      when:
+        - ansible_network_os == "icx" and ansible_icx_model is match("ICX6.*")
+        - ansible_network_os == "icx" and ansible_icx_model is match("FWS.*")
+
+    - name: ICX7000 - Copy to Output "{{ lookup('env', 'PWD') }}/icx/logs"
+      copy:
+        content:
+          - "{{ nowtime }} -- {{ reply_icx7000 }}"
+        dest: "{{ lookup('env', 'PWD') }}/icx/logs/{{ inventory_hostname }}-{{ ansible_host }}.log"
+      when:
+        - ansible_network_os == "icx" and ansible_icx_model is match("ICX7.*")
+

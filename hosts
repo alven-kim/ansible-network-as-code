@@ -1,0 +1,69 @@
+##### Unused group_vars - Include all vars in the "hosts" inventory file #####
+
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3
+ansible_connection=network_cli
+ansible_become=yes
+ansible_become_method=enable
+ansible_user="Your Account"
+ansible_password="Your PW"
+ansible_become_pass="Your PW"
+
+[icx:vars]
+ansible_network_os=icx
+
+[icx]
+#icx1(test-sw-01)  ansible_host=10.20.10.101   ansible_icx_model=FWS624G
+#icx2(test-sw-02) ansible_host=10.20.10.102 ansible_icx_model=ICX7450-48F
+#icx3(test-sw-03)  ansible_host=10.20.10.103   ansible_icx_model=ICX6650-64
+#icx4(test-sw-04)    ansible_host=10.20.10.104       ansible_icx_model=ICX6450-48
+#icx5(test-sw-05)       ansible_host=10.20.10.105       ansible_icx_model=ICX7250-48
+icx6(test-sw-06) ansible_host=10.20.10.106 ansible_icx_model=ICX7750-48C
+
+[junos:vars]
+ansible_network_os=junos
+
+[junos]
+#junos1(test-sw-01)  ansible_host=10.20.20.101  ansible_junos_model=qfx5110-32q
+#junos2(test-sw-02)  ansible_host=10.20.20.102  ansible_junos_model=qfx5110-32q
+#junos3(test-sw-03) ansible_host=10.20.20.103  ansible_junos_model=qfx5100-48t-6q
+junos4(test-sw-04) ansible_host=10.20.20.104 ansible_junos_model=qfx5100-48t-6q
+
+[ios:vars]
+ansible_network_os=ios
+
+[ios]
+ios1(test-l3-01) ansible_host=10.20.30.101 ansible_ios_model=c2960g-48t
+
+[tmos:vars]
+ansible_network_os=tmos
+
+[tmos]
+tmos1(test-lb-01) ansible_host=10.20.40.101 ansible_tmos_model=i7800
+tmos2(test-lb-02) ansible_host=10.20.40.102 ansible_tmos_model=i7800
+tmos3(test-lb-03) ansible_host=10.20.40.103 ansible_tmos_model=i11800-DS
+
+[alteonos:vars]
+ansible_network_os=alteonos
+
+[alteonos]
+alteonos1(test-lb-01) ansible_host=10.20.50.101 ansible_alteonos_model=AAS4408
+alteonos2(test-lb-02) ansible_host=10.20.50.102 ansible_alteonos_model=AAS4416
+alteonos3(test-lb-03) ansible_host=10.20.50.103 ansible_alteonos_model=AAS5224
+
+[network:children]
+icx
+junos
+ios
+tmos
+alteonos
+
+[switches:children]
+icx
+junos
+ios
+
+[loadbalancer:children]
+tmos
+alteonos
+

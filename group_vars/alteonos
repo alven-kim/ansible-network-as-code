@@ -1,0 +1,3 @@
+---
+#[alteonos:vars]
+ansible_network_os: alteonos

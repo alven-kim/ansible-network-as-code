@@ -1,0 +1,41 @@
+---
+- name: Get Device Facts
+  hosts: junos
+  connection: network_cli
+  gather_facts: no
+
+  tasks:
+    - name: run show version on remote devices
+      register: reply_junos
+      junos_command:
+        commands: 
+          - config
+          - set system syslog host 10.20.75.125 any notice
+          - set system syslog host 10.20.75.125 authorization info
+          - set snmp client-list CLIENT-LIST 10.20.75.125/32
+          - set firewall family inet filter VTY term 01 from source-address 10.20.75.125/32
+          - commit comment "ansible add snmp syslog"
+#        wait_for:
+#          - result[0] contains hostname
+#          - result[1] contains qfx
+        display: text  # set / json / xml / text # aliases format, output
+      when: ansible_network_os == 'junos'
+
+
+    - name: Debug Print Output
+      debug:
+        msg:
+          - "{{ reply_junos.stdout_lines }}"
+
+
+    - name: Saving data to local file "{{ lookup('env', 'PWD') }}/junos/logs"
+      copy:
+        content:  "{{ reply_junos.stdout_lines | to_nice_json }}"
+#            - "{{ reply_junos.stdout_lines[0] | to_json(indent=8)}}"
+#            - "{{ reply_junos.stdout_lines[1] | to_nice_yaml(indent=8) }}"
+#            - "{{ reply_junos.stdout_lines[1] | to_yaml }}"
+        dest: "{{ lookup('env', 'PWD') }}/junos/logs/{{inventory_hostname}}-{{ ansible_host }}.log"
+#        dest: "/etc/ansible/{{ hostvars[item].ansible_host }}.txt"
+#      delegate_to: localhost
+
+

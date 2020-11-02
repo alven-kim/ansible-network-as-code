@@ -1,0 +1,142 @@
+---
+- name: Get Device Facts
+  hosts: icx
+  connection: network_cli
+  roles:
+    - icx
+  gather_facts: no
+
+  vars:
+    nowtime: "{{ lookup('pipe', 'date +%FT%T') }}"
+
+  tasks:
+    - name: Gather facts (icx) # https://docs.ansible.com/ansible/latest/modules/icx_facts_module.html
+      icx_facts:
+        gather_subset:
+          - "!interfaces"
+          - "!config"
+          - "!default"
+          - "hardware"
+      when: ansible_network_os == 'icx'
+
+#    - name: Gather facts (eos)
+#      eos_facts:
+#      when: ansible_network_os == 'eos'
+#
+#    - name: Gather facts (ios) # https://docs.ansible.com/ansible/latest/modules/ios_facts_module.html
+#      ios_facts:
+#      when: ansible_network_os == 'ios'
+#
+#    - name: Gather facts (junos) # https://docs.ansible.com/ansible/latest/modules/junos_facts_module.html
+#      ios_facts:
+#      when: ansible_network_os == 'junos'
+
+    - name: Display some facts variables
+      debug:
+#        msg: "The hostname is {{ ansible_net_hostname }} and the OS is {{ ansible_net_version }}"
+        msg:
+          - "Hostname: {{ ansible_net_hostname }}"
+          - "Model: {{ ansible_icx_model }}"
+          - "Version: {{ ansible_net_version }}"
+          - "Serial: {{ ansible_net_serialnum }}"
+          - "MGMT: {{ ansible_net_all_ipv4_addresses }}"  # MGMT IP Output
+          - "Stack: {{ ansible_net_stacked_models }}"
+          - "Interfaces: {{ ansible_net_interfaces }}"
+          - "Subnet: {{ ansible_net_gather_subset }}"
+          - "Config: {{ ansible_net_config }}"
+      when: ansible_network_os == 'icx'
+
+##### ICX 6000 or FWS624G
+    - name: ICX6000, FWS624G Commands Config
+      icx_command:
+        commands:
+          - command: "config t"
+          - command: "ip ssh idle-time 5"
+          - command: "no telnet server"
+          - command: "no web-management http"
+          - command: "snmp-server host 10.20.75.250 version v2c alvenkim"
+          - command: "access-list 10 permit host 10.20.75.250"
+      register: reply_icx6000
+      ignore_errors: yes
+      when:
+        - ansible_network_os == 'icx' and ansible_icx_model is regex('ICX7.*')
+#        - ansible_icx_model is match("ICX6.*") or ansible_icx_model is match("FWS.*")    # https://docs.ansible.com/ansible/latest/user_guide/playbooks_tests.html#testing-strings
+#        - "ansible_icx_model.startswith('icx6')"
+#        - "'icx6' or 'fws624' in ansible_icx_model"
+#      failed_when:  # https://docs.ansible.com/ansible/latest/user_guide/playbooks_error_handling.html
+#        - reply_icx6000.rc == 0
+#        - "'fail' in reply_icx6000.stderr"
+#        - "'Duplicate' not in 'reply_icx6000.stderr or reply_icx6000.stdout'"
+#      changed_when:
+#        - "'Duplicate' not in 'reply_icx6000.stderr or reply_icx6000.stdout'"
+
+    - name: ICX7000 Commands Config
+      icx_command:
+        commands:
+          - command: "config t"
+          - command: "ip ssh idle-time 5"
+          - command: "no telnet server"
+          - command: "no web-management http"
+          - command: "snmp-server host 10.20.75.250 version v2c alvenkim"
+          - command: "ip access-list standard 10"
+          - command: "permit host 10.20.75.250"
+          - command: "ip access-list standard snmp_ACL"
+          - command: "permit host 10.20.75.250"
+      register: reply_icx7000
+      ignore_errors: yes
+      when:
+        - ansible_network_os == 'icx' and ansible_icx_model is regex('ICX7.*')
+#        - "'icx7' in ansible_icx_model"
+#      failed_when:
+#        - reply_icx7000.rc == 0
+#        - "'fail' in reply_icx7000.stderr"
+#        - "'duplicate' not in 'reply_icx7000.stderr or reply_icx7000.stdout'"
+#      changed_when:
+#        - "'duplicate' not in 'reply_icx7000.stderr or reply_icx7000.stdout'"
+
+    - name: ICX6000 - Copy to Output "{{ lookup('env', 'PWD') }}/icx/logs"
+      copy:
+        content:
+          - "{{ nowtime }} -- {{ reply_icx6000 }}"
+        dest: "{{ lookup('env', 'PWD') }}/icx/logs/{{ inventory_hostname }}-{{ ansible_host }}.log"
+      when:
+        - ansible_network_os == 'icx' and ansible_icx_model is regex('ICX6.*')
+#        - ansible_icx_model is match("ICX6.*") or ansible_icx_model is match("FWS.*")
+#        - ansible_network_os == "icx" and ansible_net_version == "08.0.30gT203"
+
+    - name: ICX7000 - Copy to Output "{{ lookup('env', 'PWD') }}/icx/logs"
+      copy:
+        content:
+          - "{{ nowtime }} -- {{ reply_icx7000 }}"
+        dest: "{{ lookup('env', 'PWD') }}/icx/logs/{{ inventory_hostname }}-{{ ansible_host }}.log"
+      when:
+        - ansible_network_os == 'icx' and ansible_icx_model is regex('ICX7.*')
+#        - ansible_icx_model is match("ICX6.*") or ansible_icx_model is match("FWS.*")
+#        - ansible_network_os == "icx" and ansible_net_version == "08.0.30gT203"
+
+
+
+
+
+
+
+##### etc sample #####
+
+#    - name: ICX - Debug
+##      debug: var=reply_icx_7000.stdout_lines
+#      debug:
+#        msg:
+#          - "{{ reply_icx6000 }}"
+#          - "{{ reply_icx7000 }}"
+
+#    - name: Copy output to "/etc/ansible"
+#      copy:
+#        content:
+#          - "show version - {{ reply_icx.stdout_lines[0] | to_json }}"
+##          - "show run vlan - {{ reply_icx.stdout_lines[1] | to_nice_json(indent=10) }}"
+##          - "show ip interface - {{ reply_icx.stdout_lines[2] | to_nice_json(indent=8) }}"
+##          - "show running-config - {{ reply_icx.stdout_lines[3] | to_nice_json(indent=2) }}"
+#        dest: "/etc/ansible/{{ inventory_hostname }}-{{ ansible_host }}.log"
+#      when: ansible_network_os == "icx" or ansible_network_os == "ios"
+##      when: group_names | select('search','hello') | list | count > 0
+

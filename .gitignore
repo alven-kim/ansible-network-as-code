@@ -1,0 +1,12 @@
+# except
+
+*.rtf
+*.py
+*.bak
+*.bak.*
+*.default
+.DS_Store
+__pycache__/
+old
+inventory
+inventory-vault

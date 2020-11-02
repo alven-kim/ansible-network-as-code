@@ -1,0 +1,101 @@
+---
+- name: Get Device Facts
+  hosts: icx
+  connection: network_cli
+  gather_facts: no
+
+  tasks:
+    - name: Gather facts (icx)
+      icx_facts:
+      when: ansible_network_os == 'icx'
+
+#    - name: Gather facts (eos)
+#      eos_facts:
+#      when: ansible_network_os == 'eos'
+#
+#    - name: Gather facts (ios)
+#      ios_facts:
+#      when: ansible_network_os == 'ios'
+
+
+    - name: Display some facts variables
+      debug:
+#        msg: "The hostname is {{ ansible_net_hostname }} and the OS is {{ ansible_net_version }}"
+        msg:
+          - "Hostname: {{ ansible_net_hostname }}"
+          - "Model: {{ ansible_net_model }}"
+          - "Version: {{ ansible_net_version }}"
+          - "Serial: {{ ansible_net_serialnum }}"
+          - "MGMT: {{ ansible_net_all_ipv4_addresses }}"  # MGMT IP Output
+          - "Stack: {{ ansible_net_stacked_models }}"
+#          - "Interfaces: {{ ansible_net_interfaces }}"
+#          - "Subnet: {{ ansible_net_gather_subset }}"
+#          - "Config: {{ ansible_net_config }}"
+      when: ansible_network_os == 'icx'
+
+    - name: Commands copy to file output
+      register: reply_icx_ip
+      icx_command:
+        commands:
+          - show version
+          - show run vlan
+          - show ip interface
+          - show running-config
+
+    - name: Copy output "{{ lookup('env', 'PWD') }}/icx/logs"
+      copy:
+        content: "{{ reply_icx_ip.stdout_lines | to_nice_json }}"
+#        content:
+#          - "show version - {{ reply_icx_ip.stdout_lines[0] | to_nice_json(indent=10) }}"
+#          - "show run vlan - {{ reply_icx_ip.stdout_lines[1] | to_nice_json(indent=10) }}"
+#          - "show ip interface - {{ reply_icx_ip.stdout_lines[2] | to_nice_json(indent=8) }}"
+#          - "show running-config - {{ reply_icx_ip.stdout_lines[3] | to_nice_json(indent=2) }}"
+        dest: "{{ lookup('env', 'PWD') }}/icx/logs/{{ inventory_hostname }}-{{ ansible_host }}.log"
+#    - copy: content="{{ reply_icx.stdout_lines | to_nice_json }}" dest="{{ inventory_hostname }}.json"
+
+    - name: Print output
+      debug:
+        msg: "{{ reply_icx_ip.stdout_lines }}"
+#          - reply_subnet.stdout_lines
+#          - reply_config.stdout_lines
+#          - reply_hardware.stdout_lines
+
+
+
+
+
+
+##### etc sample #####
+
+#    - name: render template onto an ICX device
+#      icx_config:
+#        backup: yes
+
+    # Collect all facts from the device
+#    - name: reply subnet
+#      icx_facts:
+#        gather_subset: all
+#      register: reply_subnet
+#    
+#    # Collect only the config and default facts
+#    - name: reply subnet
+#      icx_facts:
+#        gather_subset:
+#          - config
+#      register: reply_config
+#    
+#    # Do not collect hardware facts
+#    - name: reply subnet
+#      icx_facts:
+#        gather_subset:
+#          - "!hardware"
+#      register: reply_hardware
+#
+#    - name: Print output
+#      debug:
+#        var: response.stdout_lines
+#        msg: "{{ ansible_net_hostname }}"
+##        var: reply_subnet.stdout_lines
+##        var: reply_config.stdout_lines
+##        var: reply_hardware.stdout_lines
+#
