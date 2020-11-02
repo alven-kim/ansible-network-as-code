@@ -7,4 +7,4 @@
 *.default
 .DS_Store
 __pycache__/
-*.yml.old
+ansible-icx/*.yml.old
